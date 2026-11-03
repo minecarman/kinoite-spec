@@ -53,6 +53,7 @@ data FlatpakSpec = FlatpakSpec
   { flatpakUser :: Set FlatpakId
   , flatpakSystem :: Set FlatpakId
   , flatpakOverrides :: Map FlatpakId FlatpakOverride
+  , flatpakRemotes :: Map FlatpakId Text
   }
   deriving (Eq, Show, Generic)
 
@@ -88,7 +89,8 @@ instance FromJSON FlatpakSpec where
     user <- object .:? "user" .!= mempty
     system <- object .:? "system" .!= mempty
     overrides <- object .:? "overrides" .!= mempty
-    pure (FlatpakSpec user system (Map.mapKeys FlatpakId overrides))
+    remotes <- object .:? "remotes" .!= mempty
+    pure (FlatpakSpec user system (Map.mapKeys FlatpakId overrides) (Map.mapKeys FlatpakId remotes))
 
 instance FromJSON FlatpakOverride where
   parseJSON = withObject "FlatpakOverride" $ \object ->
@@ -129,6 +131,7 @@ instance ToJSON FlatpakSpec where
       [ "user" .= flatpakUser specification
       , "system" .= flatpakSystem specification
       , "overrides" .= Map.mapKeys flatpakIdText (flatpakOverrides specification)
+      , "remotes" .= Map.mapKeys flatpakIdText (flatpakRemotes specification)
       ]
 
 flatpakIdText :: FlatpakId -> Text

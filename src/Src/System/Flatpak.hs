@@ -34,13 +34,17 @@ data OverrideSection = ContextSection | EnvironmentSection
 data FlatpakEntry = FlatpakEntry
   { flatpakApplication :: Maybe FlatpakId
   , flatpakInstallation :: Text
+  , flatpakOrigin :: Maybe Text
   }
 
 instance FromJSON FlatpakEntry where
   parseJSON = withObject "flatpak entry" $ \object ->
-    FlatpakEntry <$> object .:? "application_id" <*> object .: "installation"
+    FlatpakEntry
+      <$> object .:? "application_id"
+      <*> object .: "installation"
+      <*> object .:? "origin"
 
-parseFlatpakList :: ByteString -> Either Text (Set FlatpakId, Set FlatpakId)
+parseFlatpakList :: ByteString -> Either Text (Set FlatpakId, Set FlatpakId, Map FlatpakId Text)
 parseFlatpakList contents = do
   entries <- decodeJson "flatpak list" contents
   pure
@@ -56,9 +60,15 @@ parseFlatpakList contents = do
         , Just application <- [flatpakApplication entry]
         , flatpakInstallation entry == "system"
         ]
+    , Map.fromList
+        [ (application, origin)
+        | entry <- entries
+        , Just application <- [flatpakApplication entry]
+        , Just origin <- [flatpakOrigin entry]
+        ]
     )
 
-inspectFlatpak :: IO (Either Text (Set FlatpakId, Set FlatpakId))
+inspectFlatpak :: IO (Either Text (Set FlatpakId, Set FlatpakId, Map FlatpakId Text))
 inspectFlatpak = do
   (command, arguments) <- resolveHostCommand "flatpak" ["list", "--json"]
   result <-

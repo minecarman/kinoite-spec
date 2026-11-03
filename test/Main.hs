@@ -47,6 +47,7 @@ main = do
   assert "diff creates missing distroboxes" distroboxDiff
   assert "flatpak overrides parse and produce actions" overrideDiff
   assert "flatpak override output parses" overrideOutput
+  assert "flatpak remote produces install command" remoteCommand
 
 validConfiguration :: Bool
 validConfiguration =
@@ -76,12 +77,13 @@ flatpakJson :: Bool
 flatpakJson =
   parseFlatpakList
     "[\
-    \{\"application_id\":\"org.mozilla.Firefox\",\"installation\":\"system\"},\
+    \{\"application_id\":\"org.mozilla.Firefox\",\"installation\":\"system\",\"origin\":\"flathub\"},\
     \{\"runtime\":\"org.gnome.Platform\",\"installation\":\"system\"},\
     \{\"application_id\":\"com.spotify.Client\",\"installation\":\"user\"}]"
     == Right
       ( Set.singleton (FlatpakId "com.spotify.Client")
       , Set.singleton (FlatpakId "org.mozilla.Firefox")
+      , Map.singleton (FlatpakId "org.mozilla.Firefox") "flathub"
       )
 
 malformedJson :: Bool
@@ -95,7 +97,7 @@ diffActions =
     == [ InstallOstree (PackageName "tmux")
        , RemoveOstree (PackageName "vim")
        , RemoveFlatpak (FlatpakId "com.old.App") User
-       , InstallFlatpak (FlatpakId "org.mozilla.Firefox") System
+       , InstallFlatpak (FlatpakId "org.mozilla.Firefox") System Nothing
        ]
 
 emptyDiff :: Bool
@@ -122,6 +124,11 @@ runnerCommands =
         User
         (FlatpakOverride (Set.singleton "host") (Set.singleton "KEY=value") (Set.singleton "wayland")))
       == ("distrobox-host-exec", ["flatpak", "--user", "override", "--filesystem=host", "--env=KEY=value", "--socket=wayland", "com.example.App"])
+
+remoteCommand :: Bool
+remoteCommand =
+  commandForAction (InstallFlatpak (FlatpakId "org.kde.kmines") System (Just "flathub"))
+    == ("distrobox-host-exec", ["flatpak", "--system", "install", "--noninteractive", "flathub", "org.kde.kmines"])
 
 overrideDiff :: Bool
 overrideDiff =
@@ -167,6 +174,7 @@ currentState =
         Set.fromList [PackageName "zsh", PackageName "vim"]
     , currentFlatpakUser = Set.singleton (FlatpakId "com.old.App")
     , currentFlatpakSystem = Set.empty
+    , currentFlatpakRemotes = mempty
     , currentFlatpakOverrides = mempty
     , currentDistroboxes = Set.empty
     }
@@ -182,6 +190,7 @@ targetWithDistrobox =
         FlatpakSpec
           (Set.singleton (FlatpakId "com.old.App"))
           Set.empty
+          mempty
           mempty
     , systemDistroboxes =
         [DistroboxSpec (DistroboxName "dev-box") "fedora:latest" (Just "~/Dev")]
@@ -201,6 +210,7 @@ targetSpec =
           { flatpakUser = Set.empty
           , flatpakSystem = Set.fromList [FlatpakId "org.mozilla.Firefox"]
           , flatpakOverrides = mempty
+          , flatpakRemotes = mempty
           }
     , systemDistroboxes = []
     }
@@ -219,6 +229,7 @@ currentSpec =
           { flatpakUser = Set.singleton (FlatpakId "com.old.App")
           , flatpakSystem = Set.empty
           , flatpakOverrides = mempty
+          , flatpakRemotes = mempty
           }
     , systemDistroboxes = []
     }

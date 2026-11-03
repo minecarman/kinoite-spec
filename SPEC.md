@@ -30,6 +30,8 @@ flatpak:
     - md.obsidian.Obsidian
   system:
     - org.mozilla.firefox
+  remotes:
+    org.kde.kmines: flathub
   overrides:
     com.spotify.Client:
       filesystem:

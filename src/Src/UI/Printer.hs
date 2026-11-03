@@ -36,7 +36,7 @@ renderAction action =
       "+ Kurulacak Ostree paketi: " <> packageName
     RemoveOstree (PackageName packageName) ->
       "- Kaldırılacak Ostree paketi: " <> packageName
-    InstallFlatpak (FlatpakId flatpakId) scope ->
+    InstallFlatpak (FlatpakId flatpakId) scope _ ->
       "+ Kurulacak Flatpak (" <> renderScope scope <> "): " <> flatpakId
     RemoveFlatpak (FlatpakId flatpakId) scope ->
       "- Kaldırılacak Flatpak (" <> renderScope scope <> "): " <> flatpakId
@@ -56,7 +56,7 @@ actionColor :: Action -> Color
 actionColor action =
   case action of
     InstallOstree _ -> Green
-    InstallFlatpak _ _ -> Green
+    InstallFlatpak _ _ _ -> Green
     RemoveOstree _ -> Red
     RemoveFlatpak _ _ -> Red
     ApplyFlatpakOverride _ _ _ -> Blue

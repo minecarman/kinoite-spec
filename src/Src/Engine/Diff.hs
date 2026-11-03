@@ -4,6 +4,8 @@ module Src.Engine.Diff
 
 import Data.Set (Set)
 import qualified Data.Set as Set
+import Data.Text (Text)
+import Data.Map (Map)
 import qualified Data.Map as Map
 import Src.Types.Action (Action (..), Scope (..))
 import Src.Types.CurrentState
@@ -41,10 +43,12 @@ flatpakActions current target =
     User
     (currentFlatpakUser current)
     (flatpakUser (systemFlatpak target))
+    (flatpakRemotes (systemFlatpak target))
     <> flatpakScopeActions
       System
       (currentFlatpakSystem current)
       (flatpakSystem (systemFlatpak target))
+      (flatpakRemotes (systemFlatpak target))
     <> overrideActions current target
 
 overrideActions :: CurrentState -> SystemSpec -> [Action]
@@ -65,14 +69,14 @@ emptyOverride override =
     && Set.null (overrideEnvironment override)
     && Set.null (overrideSockets override)
 
-flatpakScopeActions :: Scope -> Set FlatpakId -> Set FlatpakId -> [Action]
-flatpakScopeActions scope current target =
+flatpakScopeActions :: Scope -> Set FlatpakId -> Set FlatpakId -> Map FlatpakId Text -> [Action]
+flatpakScopeActions scope current target remotes =
   installFlatpaks (target `Set.difference` current)
     <> removeFlatpaks (current `Set.difference` target)
   where
     installFlatpaks :: Set FlatpakId -> [Action]
     installFlatpaks items =
-      [InstallFlatpak item scope | item <- Set.toAscList items]
+      [InstallFlatpak item scope (Map.lookup item remotes) | item <- Set.toAscList items]
     removeFlatpaks :: Set FlatpakId -> [Action]
     removeFlatpaks items =
       [RemoveFlatpak item scope | item <- Set.toAscList items]

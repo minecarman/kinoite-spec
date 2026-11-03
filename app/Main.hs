@@ -35,6 +35,7 @@ import Src.Types.CurrentState (CurrentState (..))
 import Src.Types.Spec (FlatpakSpec (..), OstreeSpec (..), SystemSpec (..))
 import Src.UI.Printer (printPlan)
 import Data.Yaml (encode)
+import System.IO (hFlush, stdout)
 import System.Exit (exitFailure)
 
 data Command
@@ -132,7 +133,7 @@ runExport = do
   flatpakResult <- inspectFlatpak
   distroboxResult <- inspectDistroboxSpecs
   case (ostreeResult, flatpakResult, distroboxResult) of
-    (Right ostreePackages, Right (userPackages, systemPackages), Right distroboxes) -> do
+    (Right ostreePackages, Right (userPackages, systemPackages, remotes), Right distroboxes) -> do
       overrideResult <- inspectFlatpakOverrides userPackages systemPackages
       case overrideResult of
         Left message -> reportError message
@@ -143,7 +144,7 @@ runExport = do
               SystemSpec
                 { systemVersion = 1
                 , systemOstree = OstreeSpec ostreePackages
-                , systemFlatpak = FlatpakSpec userPackages systemPackages overrides
+                , systemFlatpak = FlatpakSpec userPackages systemPackages overrides remotes
                 , systemDistroboxes = distroboxes
                 }
     (Left message, _, _) -> reportError message
@@ -153,6 +154,7 @@ runExport = do
 askConfirmation :: IO Bool
 askConfirmation = do
   Text.IO.putStr "Bu değişiklikler uygulansın mı? [e/H] "
+  hFlush stdout
   answer <- Text.toLower <$> Text.IO.getLine
   pure (answer == "e" || answer == "evet" || answer == "y" || answer == "yes")
 
@@ -162,7 +164,7 @@ inspectCurrentState = do
   flatpakResult <- inspectFlatpak
   distroboxResult <- inspectDistroboxes
   case (ostreeResult, flatpakResult, distroboxResult) of
-    (Right ostreePackages, Right (flatpakUserPackages, flatpakSystemPackages), Right distroboxes) -> do
+    (Right ostreePackages, Right (flatpakUserPackages, flatpakSystemPackages, flatpakRemotes), Right distroboxes) -> do
       overrideResult <- inspectFlatpakOverrides flatpakUserPackages flatpakSystemPackages
       pure $ do
         overrides <- overrideResult
@@ -171,6 +173,7 @@ inspectCurrentState = do
             { currentOstreePackages = ostreePackages
             , currentFlatpakUser = flatpakUserPackages
             , currentFlatpakSystem = flatpakSystemPackages
+            , currentFlatpakRemotes = flatpakRemotes
             , currentFlatpakOverrides = overrides
             , currentDistroboxes = distroboxes
             }

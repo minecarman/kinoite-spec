@@ -17,11 +17,14 @@ Proje şu anda Faz 6 kapsamındadır:
 - Distrobox durumlarını okuma ve eksik kutuları oluşturma planı
 - `export` komutuyla mevcut durumu YAML olarak dışa aktarma
 - Flatpak `filesystem`, `environment` ve `sockets` override'larını uygulama
+- Belirsiz Flatpak kaynakları için uygulama başına `remote` seçimi
 
 Flatpak override örneği:
 
 ```yaml
 flatpak:
+  remotes:
+    org.kde.KMines: flathub
   overrides:
     com.example.App:
       filesystem:

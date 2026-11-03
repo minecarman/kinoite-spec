@@ -53,8 +53,8 @@ commandForAction action =
       hostCommand "rpm-ostree" ["install", Text.unpack packageName]
     RemoveOstree (PackageName packageName) ->
       hostCommand "rpm-ostree" ["uninstall", Text.unpack packageName]
-    InstallFlatpak (FlatpakId flatpakId) scope ->
-      hostCommand "flatpak" (scopeArguments scope <> ["install", "--noninteractive", Text.unpack flatpakId])
+    InstallFlatpak (FlatpakId flatpakId) scope remote ->
+      hostCommand "flatpak" (scopeArguments scope <> ["install", "--noninteractive"] <> maybe [] (\name -> [Text.unpack name]) remote <> [Text.unpack flatpakId])
     RemoveFlatpak (FlatpakId flatpakId) scope ->
       hostCommand "flatpak" (scopeArguments scope <> ["uninstall", "--noninteractive", Text.unpack flatpakId])
     ApplyFlatpakOverride (FlatpakId flatpakId) scope override ->

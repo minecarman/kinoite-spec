@@ -3,6 +3,7 @@ module Src.Types.Action
   , Scope (..)
   ) where
 
+import Data.Text (Text)
 import Src.Types.Spec (DistroboxSpec, FlatpakId, FlatpakOverride, PackageName)
 
 data Scope
@@ -13,7 +14,7 @@ data Scope
 data Action
   = InstallOstree PackageName
   | RemoveOstree PackageName
-  | InstallFlatpak FlatpakId Scope
+  | InstallFlatpak FlatpakId Scope (Maybe Text)
   | RemoveFlatpak FlatpakId Scope
   | ApplyFlatpakOverride FlatpakId Scope FlatpakOverride
   | CreateDistrobox DistroboxSpec
