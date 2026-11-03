@@ -40,6 +40,8 @@ renderAction action =
       "+ Kurulacak Flatpak (" <> renderScope scope <> "): " <> flatpakId
     RemoveFlatpak (FlatpakId flatpakId) scope ->
       "- Kaldırılacak Flatpak (" <> renderScope scope <> "): " <> flatpakId
+    ApplyFlatpakOverride (FlatpakId flatpakId) scope _ ->
+      "~ Uygulanacak Flatpak override (" <> renderScope scope <> "): " <> flatpakId
     CreateDistrobox specification ->
       "+ Oluşturulacak Distrobox: "
         <> renderDistroboxName (distroboxName specification)
@@ -57,6 +59,7 @@ actionColor action =
     InstallFlatpak _ _ -> Green
     RemoveOstree _ -> Red
     RemoveFlatpak _ _ -> Red
+    ApplyFlatpakOverride _ _ _ -> Blue
     CreateDistrobox _ -> Green
 
 renderScope :: Scope -> Text

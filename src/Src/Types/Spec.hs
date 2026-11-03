@@ -5,6 +5,7 @@ module Src.Types.Spec
   ( DistroboxSpec (..)
   , DistroboxName (..)
   , FlatpakId (..)
+  , FlatpakOverride (..)
   , FlatpakSpec (..)
   , OstreeSpec (..)
   , PackageName (..)
@@ -22,6 +23,8 @@ import Data.Aeson
   , (.=)
   )
 import Data.Set (Set)
+import Data.Map (Map)
+import qualified Data.Map as Map
 import Data.Text (Text)
 import GHC.Generics (Generic)
 
@@ -39,9 +42,17 @@ data OstreeSpec = OstreeSpec
   }
   deriving (Eq, Show, Generic)
 
+data FlatpakOverride = FlatpakOverride
+  { overrideFilesystem :: Set Text
+  , overrideEnvironment :: Set Text
+  , overrideSockets :: Set Text
+  }
+  deriving (Eq, Ord, Show, Generic)
+
 data FlatpakSpec = FlatpakSpec
   { flatpakUser :: Set FlatpakId
   , flatpakSystem :: Set FlatpakId
+  , flatpakOverrides :: Map FlatpakId FlatpakOverride
   }
   deriving (Eq, Show, Generic)
 
@@ -73,10 +84,18 @@ instance FromJSON OstreeSpec where
     OstreeSpec <$> object .: "layered_packages"
 
 instance FromJSON FlatpakSpec where
-  parseJSON = withObject "FlatpakSpec" $ \object ->
-    FlatpakSpec
-      <$> object .:? "user" .!= mempty
-      <*> object .:? "system" .!= mempty
+  parseJSON = withObject "FlatpakSpec" $ \object -> do
+    user <- object .:? "user" .!= mempty
+    system <- object .:? "system" .!= mempty
+    overrides <- object .:? "overrides" .!= mempty
+    pure (FlatpakSpec user system (Map.mapKeys FlatpakId overrides))
+
+instance FromJSON FlatpakOverride where
+  parseJSON = withObject "FlatpakOverride" $ \object ->
+    FlatpakOverride
+      <$> object .:? "filesystem" .!= mempty
+      <*> object .:? "environment" .!= mempty
+      <*> object .:? "sockets" .!= mempty
 
 instance FromJSON DistroboxSpec where
   parseJSON = withObject "DistroboxSpec" $ \object ->
@@ -109,6 +128,18 @@ instance ToJSON FlatpakSpec where
     object
       [ "user" .= flatpakUser specification
       , "system" .= flatpakSystem specification
+      , "overrides" .= Map.mapKeys flatpakIdText (flatpakOverrides specification)
+      ]
+
+flatpakIdText :: FlatpakId -> Text
+flatpakIdText (FlatpakId flatpakId) = flatpakId
+
+instance ToJSON FlatpakOverride where
+  toJSON override =
+    object
+      [ "filesystem" .= overrideFilesystem override
+      , "environment" .= overrideEnvironment override
+      , "sockets" .= overrideSockets override
       ]
 
 instance ToJSON DistroboxSpec where

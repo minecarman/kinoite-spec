@@ -12,11 +12,13 @@ import qualified Data.ByteString.Lazy as LazyByteString
 import Data.Text (Text)
 import qualified Data.Text as Text
 import qualified Data.Text.Encoding as Text.Encoding
+import qualified Data.Set as Set
 import Src.Types.Action (Action (..), Scope (..))
 import Src.Types.Spec
   ( DistroboxSpec (..)
   , DistroboxName (..)
   , FlatpakId (..)
+  , FlatpakOverride (..)
   , PackageName (..)
   )
 import System.Exit (ExitCode (..))
@@ -53,6 +55,16 @@ commandForAction action =
       hostCommand "flatpak" (scopeArguments scope <> ["install", "--noninteractive", Text.unpack flatpakId])
     RemoveFlatpak (FlatpakId flatpakId) scope ->
       hostCommand "flatpak" (scopeArguments scope <> ["uninstall", "--noninteractive", Text.unpack flatpakId])
+    ApplyFlatpakOverride (FlatpakId flatpakId) scope override ->
+      hostCommand
+        "flatpak"
+        ( scopeArguments scope
+            <> ["override"]
+            <> map ("--filesystem=" <>) (map Text.unpack (Set.toAscList (overrideFilesystem override)))
+            <> map ("--env=" <>) (map Text.unpack (Set.toAscList (overrideEnvironment override)))
+            <> map ("--socket=" <>) (map Text.unpack (Set.toAscList (overrideSockets override)))
+            <> [Text.unpack flatpakId]
+        )
     CreateDistrobox specification ->
       ( "distrobox-host-exec"
       , [ "distrobox"

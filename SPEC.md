@@ -30,6 +30,14 @@ flatpak:
     - md.obsidian.Obsidian
   system:
     - org.mozilla.firefox
+  overrides:
+    com.spotify.Client:
+      filesystem:
+        - home
+      environment:
+        - EDITOR=vim
+      sockets:
+        - wayland
 
 distrobox:
   - name: dev-box

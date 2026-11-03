@@ -28,7 +28,7 @@ import Options.Applicative
 import Src.Config (ConfigError, loadConfig)
 import Src.Engine.Diff (diff)
 import Src.Runner (runActions)
-import Src.System.Flatpak (inspectFlatpak)
+import Src.System.Flatpak (inspectFlatpak, inspectFlatpakOverrides)
 import Src.System.Distrobox (inspectDistroboxSpecs, inspectDistroboxes)
 import Src.System.Ostree (inspectOstree)
 import Src.Types.CurrentState (CurrentState (..))
@@ -132,16 +132,20 @@ runExport = do
   flatpakResult <- inspectFlatpak
   distroboxResult <- inspectDistroboxSpecs
   case (ostreeResult, flatpakResult, distroboxResult) of
-    (Right ostreePackages, Right (userPackages, systemPackages), Right distroboxes) ->
-      Text.IO.putStr (Text.Encoding.decodeUtf8 (encode specification))
-      where
-        specification =
-          SystemSpec
-            { systemVersion = 1
-            , systemOstree = OstreeSpec ostreePackages
-            , systemFlatpak = FlatpakSpec userPackages systemPackages
-            , systemDistroboxes = distroboxes
-            }
+    (Right ostreePackages, Right (userPackages, systemPackages), Right distroboxes) -> do
+      overrideResult <- inspectFlatpakOverrides userPackages systemPackages
+      case overrideResult of
+        Left message -> reportError message
+        Right overrides ->
+          Text.IO.putStr (Text.Encoding.decodeUtf8 (encode specification))
+          where
+            specification =
+              SystemSpec
+                { systemVersion = 1
+                , systemOstree = OstreeSpec ostreePackages
+                , systemFlatpak = FlatpakSpec userPackages systemPackages overrides
+                , systemDistroboxes = distroboxes
+                }
     (Left message, _, _) -> reportError message
     (_, Left message, _) -> reportError message
     (_, _, Left message) -> reportError message
@@ -157,17 +161,22 @@ inspectCurrentState = do
   ostreeResult <- inspectOstree
   flatpakResult <- inspectFlatpak
   distroboxResult <- inspectDistroboxes
-  pure $ do
-    ostreePackages <- ostreeResult
-    (flatpakUserPackages, flatpakSystemPackages) <- flatpakResult
-    distroboxes <- distroboxResult
-    pure
-      CurrentState
-        { currentOstreePackages = ostreePackages
-        , currentFlatpakUser = flatpakUserPackages
-        , currentFlatpakSystem = flatpakSystemPackages
-        , currentDistroboxes = distroboxes
-        }
+  case (ostreeResult, flatpakResult, distroboxResult) of
+    (Right ostreePackages, Right (flatpakUserPackages, flatpakSystemPackages), Right distroboxes) -> do
+      overrideResult <- inspectFlatpakOverrides flatpakUserPackages flatpakSystemPackages
+      pure $ do
+        overrides <- overrideResult
+        pure
+          CurrentState
+            { currentOstreePackages = ostreePackages
+            , currentFlatpakUser = flatpakUserPackages
+            , currentFlatpakSystem = flatpakSystemPackages
+            , currentFlatpakOverrides = overrides
+            , currentDistroboxes = distroboxes
+            }
+    (Left message, _, _) -> pure (Left message)
+    (_, Left message, _) -> pure (Left message)
+    (_, _, Left message) -> pure (Left message)
 
 renderConfigError :: ConfigError -> Text
 renderConfigError configError =

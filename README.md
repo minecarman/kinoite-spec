@@ -16,8 +16,21 @@ Proje şu anda Faz 6 kapsamındadır:
 - Kullanıcı onayıyla veya `--yes` ile action yürütme
 - Distrobox durumlarını okuma ve eksik kutuları oluşturma planı
 - `export` komutuyla mevcut durumu YAML olarak dışa aktarma
+- Flatpak `filesystem`, `environment` ve `sockets` override'larını uygulama
 
-`export` komutu ve Distrobox yönetimi henüz tamamlanmamıştır.
+Flatpak override örneği:
+
+```yaml
+flatpak:
+  overrides:
+    com.example.App:
+      filesystem:
+        - home
+      environment:
+        - EDITOR=vim
+      sockets:
+        - wayland
+```
 
 ## Gereksinimler
 

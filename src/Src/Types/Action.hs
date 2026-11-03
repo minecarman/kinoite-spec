@@ -3,7 +3,7 @@ module Src.Types.Action
   , Scope (..)
   ) where
 
-import Src.Types.Spec (DistroboxSpec, FlatpakId, PackageName)
+import Src.Types.Spec (DistroboxSpec, FlatpakId, FlatpakOverride, PackageName)
 
 data Scope
   = User
@@ -15,5 +15,6 @@ data Action
   | RemoveOstree PackageName
   | InstallFlatpak FlatpakId Scope
   | RemoveFlatpak FlatpakId Scope
+  | ApplyFlatpakOverride FlatpakId Scope FlatpakOverride
   | CreateDistrobox DistroboxSpec
   deriving (Eq, Ord, Show)

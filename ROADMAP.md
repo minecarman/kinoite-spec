@@ -63,6 +63,6 @@
 
 ## Faz 6: Gelişmiş Özellikler ve Rafine Etme
 - [X] Distrobox konteyner durumlarını okuma ve `distrobox create` entegrasyonu
-- [ ] Flatpak izin geçersiz kılmalarını (`overrides`) destekleme
+- [X] Flatpak izin geçersiz kılmalarını (`filesystem`, `environment`, `sockets`) destekleme
 - [X] `kinoite-spec export` komutuyla mevcut sistemi tek komutta YAML'a dökme
 - [ ] Tek binary çıktısı alıp Distrobox dışından (`~/.local/bin`) sorunsuz çalıştığını doğrulama

@@ -8,7 +8,7 @@ import Src.Config (parseConfig)
 import Src.Engine.Diff (diff)
 import Src.Runner (commandForAction)
 import Src.System.Distrobox (parseDistroboxList, parseDistroboxSpecs)
-import Src.System.Flatpak (parseFlatpakList)
+import Src.System.Flatpak (parseFlatpakList, parseFlatpakOverride)
 import Src.System.Ostree (parseOstreeStatus)
 import Src.Types.Action (Action (..), Scope (..))
 import Src.Types.CurrentState (CurrentState (..))
@@ -16,6 +16,7 @@ import Src.Types.Spec
   ( DistroboxName (..)
   , DistroboxSpec (..)
   , FlatpakId (..)
+  , FlatpakOverride (..)
   , FlatpakSpec (..)
   , OstreeSpec (..)
   , PackageName (..)
@@ -23,10 +24,12 @@ import Src.Types.Spec
   , systemFlatpak
   , systemOstree
   , flatpakUser
+  , flatpakOverrides
   , ostreeLayeredPackages
   )
 import Src.UI.Printer (renderAction)
 import qualified Data.Set as Set
+import qualified Data.Map as Map
 
 main :: IO ()
 main = do
@@ -42,6 +45,8 @@ main = do
   assert "distrobox list parses names" distroboxJson
   assert "distrobox export parses image data" distroboxExportJson
   assert "diff creates missing distroboxes" distroboxDiff
+  assert "flatpak overrides parse and produce actions" overrideDiff
+  assert "flatpak override output parses" overrideOutput
 
 validConfiguration :: Bool
 validConfiguration =
@@ -52,6 +57,10 @@ validConfiguration =
           == Set.fromList [PackageName "zsh", PackageName "git"]
         && flatpakUser (systemFlatpak specification)
           == Set.singleton (FlatpakId "com.spotify.Client")
+        && flatpakOverrides (systemFlatpak specification)
+          == Map.singleton
+            (FlatpakId "com.spotify.Client")
+            (FlatpakOverride (Set.singleton "home") (Set.singleton "EDITOR=vim") (Set.singleton "wayland"))
     Left _ -> False
 
 invalidConfiguration :: Bool
@@ -107,6 +116,28 @@ runnerCommands =
       == ("distrobox-host-exec", ["flatpak", "--user", "uninstall", "--noninteractive", "com.example.App"])
     && commandForAction (CreateDistrobox (DistroboxSpec (DistroboxName "dev-box") "fedora:latest" (Just "~/Dev")))
       == ("distrobox-host-exec", ["distrobox", "create", "--name", "dev-box", "--image", "fedora:latest", "--home", "~/Dev"])
+    && commandForAction
+      (ApplyFlatpakOverride
+        (FlatpakId "com.example.App")
+        User
+        (FlatpakOverride (Set.singleton "host") (Set.singleton "KEY=value") (Set.singleton "wayland")))
+      == ("distrobox-host-exec", ["flatpak", "--user", "override", "--filesystem=host", "--env=KEY=value", "--socket=wayland", "com.example.App"])
+
+overrideDiff :: Bool
+overrideDiff =
+  diff currentState overrideSpec
+    == [ApplyFlatpakOverride (FlatpakId "com.old.App") User
+          (FlatpakOverride (Set.singleton "home") Set.empty Set.empty)]
+
+overrideOutput :: Bool
+overrideOutput =
+  parseFlatpakOverride
+    "[Context]\n\
+    \sockets=x11;wayland;\n\
+    \filesystems=home;\n\
+    \[Environment]\n\
+    \EDITOR=vim\n"
+    == Right (FlatpakOverride (Set.singleton "home") (Set.singleton "EDITOR=vim") (Set.fromList ["wayland", "x11"]))
 
 distroboxJson :: Bool
 distroboxJson =
@@ -136,6 +167,7 @@ currentState =
         Set.fromList [PackageName "zsh", PackageName "vim"]
     , currentFlatpakUser = Set.singleton (FlatpakId "com.old.App")
     , currentFlatpakSystem = Set.empty
+    , currentFlatpakOverrides = mempty
     , currentDistroboxes = Set.empty
     }
 
@@ -150,6 +182,7 @@ targetWithDistrobox =
         FlatpakSpec
           (Set.singleton (FlatpakId "com.old.App"))
           Set.empty
+          mempty
     , systemDistroboxes =
         [DistroboxSpec (DistroboxName "dev-box") "fedora:latest" (Just "~/Dev")]
     }
@@ -167,6 +200,7 @@ targetSpec =
         FlatpakSpec
           { flatpakUser = Set.empty
           , flatpakSystem = Set.fromList [FlatpakId "org.mozilla.Firefox"]
+          , flatpakOverrides = mempty
           }
     , systemDistroboxes = []
     }
@@ -184,6 +218,7 @@ currentSpec =
         FlatpakSpec
           { flatpakUser = Set.singleton (FlatpakId "com.old.App")
           , flatpakSystem = Set.empty
+          , flatpakOverrides = mempty
           }
     , systemDistroboxes = []
     }
@@ -199,6 +234,26 @@ validYaml =
   \  user:\n\
   \    - com.spotify.Client\n\
   \  system: []\n"
+  <> "  overrides:\n\
+  \    com.spotify.Client:\n\
+  \      filesystem:\n\
+  \        - home\n\
+  \      environment:\n\
+  \        - EDITOR=vim\n\
+  \      sockets:\n\
+  \        - wayland\n"
+
+overrideSpec :: SystemSpec
+overrideSpec =
+  currentSpec
+    { systemFlatpak =
+        (systemFlatpak currentSpec)
+          { flatpakOverrides =
+              Map.singleton
+                (FlatpakId "com.old.App")
+                (FlatpakOverride (Set.singleton "home") Set.empty Set.empty)
+          }
+    }
 
 assert :: String -> Bool -> IO ()
 assert description condition =
