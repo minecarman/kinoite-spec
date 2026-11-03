@@ -19,6 +19,7 @@ library
     , Src.Types.Action
     , Src.Types.CurrentState
     , Src.Types.Spec
+    , Src.UI.Printer
   default-language: GHC2021
   ghc-options: -Wall
   build-depends:
@@ -29,6 +30,7 @@ library
     , yaml
     , aeson
     , typed-process
+    , ansi-terminal
 
 executable kinoite-spec
   main-is: Main.hs

@@ -5,14 +5,16 @@ amaçlayan Haskell tabanlı bir sistem konverjans motoru.
 
 ## Durum
 
-Proje şu anda Faz 2 kapsamındadır:
+Proje şu anda Faz 4 kapsamındadır:
 
 - Konfigürasyon YAML'ını güçlü Haskell tiplerine dönüştürme
 - `rpm-ostree status --json` çıktısını ayrıştırma
 - `flatpak list --json` çıktısını user/system kurulumlarına ayırma
 - Mevcut sistem durumunu temsil eden temel tipler
+- Mevcut ve hedef durum arasındaki farkları hesaplama
+- `plan --config` komutuyla renkli plan çıktısı üretme
 
-CLI entegrasyonu ve sistemde değişiklik uygulama henüz tamamlanmamıştır.
+`apply` komutu ve sistemde değişiklik uygulama henüz tamamlanmamıştır.
 
 ## Gereksinimler
 

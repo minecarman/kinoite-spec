@@ -42,12 +42,12 @@
 ---
 
 ## Faz 4: Terminal Çıktısı ve Planlama (Dry-Run UX)
-- [ ] `Src.UI.Printer`: `[Action]` listesini terminalde renkli ve okunabilir olarak biçimlendir:
+- [X] `Src.UI.Printer`: `[Action]` listesini terminalde renkli ve okunabilir olarak biçimlendir:
   - Yeşil: `+ Kurulacak`
   - Kırmızı: `- Kaldırılacak`
   - Mavi: `~ Değişecek / Güncellenecek`
-- [ ] `kinoite-spec plan` komutunu sisteme bağla ve terminalde gerçek diff'i göster
-- [ ] Değişiklik yoksa `Sistem senkronize durumda.` mesajı basıp çık
+- [X] `kinoite-spec plan` komutunu sisteme bağla ve terminalde gerçek diff'i göster
+- [X] Değişiklik yoksa `Sistem senkronize durumda.` mesajı basıp çık
 
 ---
 

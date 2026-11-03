@@ -21,6 +21,7 @@ import Src.Types.Spec
   , flatpakUser
   , ostreeLayeredPackages
   )
+import Src.UI.Printer (renderAction)
 import qualified Data.Set as Set
 
 main :: IO ()
@@ -32,6 +33,7 @@ main = do
   assert "malformed inspection JSON returns an error" malformedJson
   assert "diff produces install and remove actions" diffActions
   assert "diff ignores resources already in sync" emptyDiff
+  assert "printer renders actions" printerOutput
 
 validConfiguration :: Bool
 validConfiguration =
@@ -81,6 +83,13 @@ diffActions =
 
 emptyDiff :: Bool
 emptyDiff = diff currentState currentSpec == []
+
+printerOutput :: Bool
+printerOutput =
+  renderAction (InstallOstree (PackageName "zsh"))
+    == "+ Kurulacak Ostree paketi: zsh"
+    && renderAction (RemoveFlatpak (FlatpakId "com.example.App") User)
+      == "- Kaldırılacak Flatpak (user): com.example.App"
 
 currentState :: CurrentState
 currentState =
