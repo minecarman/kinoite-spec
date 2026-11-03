@@ -6,6 +6,7 @@ import Data.ByteString (ByteString)
 import Data.Either (isLeft)
 import Src.Config (parseConfig)
 import Src.Engine.Diff (diff)
+import Src.Runner (commandForAction)
 import Src.System.Flatpak (parseFlatpakList)
 import Src.System.Ostree (parseOstreeStatus)
 import Src.Types.Action (Action (..), Scope (..))
@@ -34,6 +35,7 @@ main = do
   assert "diff produces install and remove actions" diffActions
   assert "diff ignores resources already in sync" emptyDiff
   assert "printer renders actions" printerOutput
+  assert "runner builds safe host commands" runnerCommands
 
 validConfiguration :: Bool
 validConfiguration =
@@ -90,6 +92,13 @@ printerOutput =
     == "+ Kurulacak Ostree paketi: zsh"
     && renderAction (RemoveFlatpak (FlatpakId "com.example.App") User)
       == "- Kaldırılacak Flatpak (user): com.example.App"
+
+runnerCommands :: Bool
+runnerCommands =
+  commandForAction (InstallOstree (PackageName "zsh"))
+    == ("distrobox-host-exec", ["rpm-ostree", "install", "zsh"])
+    && commandForAction (RemoveFlatpak (FlatpakId "com.example.App") User)
+      == ("distrobox-host-exec", ["flatpak", "--user", "uninstall", "--noninteractive", "com.example.App"])
 
 currentState :: CurrentState
 currentState =

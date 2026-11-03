@@ -21,10 +21,12 @@ import Options.Applicative
   , progDesc
   , short
   , strOption
+  , switch
   , (<**>)
   )
 import Src.Config (ConfigError, loadConfig)
 import Src.Engine.Diff (diff)
+import Src.Runner (runActions)
 import Src.System.Flatpak (inspectFlatpak)
 import Src.System.Ostree (inspectOstree)
 import Src.Types.CurrentState (CurrentState (..))
@@ -33,6 +35,7 @@ import System.Exit (exitFailure)
 
 data Command
   = Plan FilePath
+  | Apply FilePath Bool
 
 main :: IO ()
 main = execParser cliParser >>= runCommand
@@ -46,7 +49,9 @@ cliParser =
 commandParser :: Parser Command
 commandParser =
   hsubparser
-    (command "plan" (info planParser (progDesc "Sistem farklarını göster")))
+    ( command "plan" (info planParser (progDesc "Sistem farklarını göster"))
+        <> command "apply" (info applyParser (progDesc "Sistem farklarını uygula"))
+    )
 
 planParser :: Parser Command
 planParser =
@@ -58,10 +63,26 @@ planParser =
           <> help "Okunacak YAML konfigürasyon dosyası"
       )
 
+applyParser :: Parser Command
+applyParser =
+  Apply
+    <$> strOption
+      ( long "config"
+          <> short 'c'
+          <> metavar "FILE"
+          <> help "Okunacak YAML konfigürasyon dosyası"
+      )
+    <*> switch
+      ( long "yes"
+          <> short 'y'
+          <> help "Onay istemeden değişiklikleri uygula"
+      )
+
 runCommand :: Command -> IO ()
 runCommand cliCommand =
   case cliCommand of
     Plan path -> runPlan path
+    Apply path autoConfirm -> runApply path autoConfirm
 
 runPlan :: FilePath -> IO ()
 runPlan path = do
@@ -73,6 +94,36 @@ runPlan path = do
       case currentStateResult of
         Left message -> reportError message
         Right currentState -> printPlan (diff currentState specification)
+
+runApply :: FilePath -> Bool -> IO ()
+runApply path autoConfirm = do
+  configResult <- loadConfig path
+  case configResult of
+    Left configError -> reportError (renderConfigError configError)
+    Right specification -> do
+      currentStateResult <- inspectCurrentState
+      case currentStateResult of
+        Left message -> reportError message
+        Right currentState -> do
+          let actions = diff currentState specification
+          printPlan actions
+          if null actions
+            then pure ()
+            else do
+              confirmed <- if autoConfirm then pure True else askConfirmation
+              if confirmed
+                then do
+                  result <- runActions actions
+                  case result of
+                    Left message -> reportError message
+                    Right () -> Text.IO.putStrLn "Değişiklikler başarıyla uygulandı."
+                else Text.IO.putStrLn "İşlem iptal edildi."
+
+askConfirmation :: IO Bool
+askConfirmation = do
+  Text.IO.putStr "Bu değişiklikler uygulansın mı? [e/H] "
+  answer <- Text.toLower <$> Text.IO.getLine
+  pure (answer == "e" || answer == "evet" || answer == "y" || answer == "yes")
 
 inspectCurrentState :: IO (Either Text CurrentState)
 inspectCurrentState = do

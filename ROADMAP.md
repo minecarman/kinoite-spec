@@ -52,12 +52,12 @@
 ---
 
 ## Faz 5: Yürütme ve Konverjans (Action Runner)
-- [ ] `Src.Runner`: `[Action]` listesini gerçek sistem komutlarına dönüştür:
+- [X] `Src.Runner`: `[Action]` listesini gerçek sistem komutlarına dönüştür:
   - `flatpak install/uninstall` çağrıları
   - `rpm-ostree install/uninstall` çağrıları
-- [ ] Kullanıcı onay mekanizmasını entegre et (`Bu değişiklikler uygulansın mı? [e/H]`)
-- [ ] Komutların hata durumlarını (`ExitFailure`) güvenli şekilde yakala ve kullanıcıya bildir
-- [ ] `kinoite-spec apply` komutunu doğrula
+- [X] Kullanıcı onay mekanizmasını entegre et (`Bu değişiklikler uygulansın mı? [e/H]`)
+- [X] Komutların hata durumlarını (`ExitFailure`) güvenli şekilde yakala ve kullanıcıya bildir
+- [X] `kinoite-spec apply` komutunu doğrula
 
 ---
 

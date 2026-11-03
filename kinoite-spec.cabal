@@ -16,6 +16,7 @@ library
     , Src.Engine.Diff
     , Src.System.Flatpak
     , Src.System.Ostree
+    , Src.Runner
     , Src.Types.Action
     , Src.Types.CurrentState
     , Src.Types.Spec
