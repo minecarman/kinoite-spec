@@ -13,10 +13,10 @@
 ---
 
 ## Faz 1: Tip Modellemesi ve Konfigürasyon Okuma
-- [ ] `Src.Types.Spec`: Hedef sistem için cebirsel veri tiplerini (`SystemSpec`, `OstreeSpec`, `FlatpakSpec`) tanımla
-- [ ] `Src.Config`: `yaml` ve `aeson` kütüphanelerini kullanarak `spec.yaml` dosyasını `SystemSpec` tipine dönüştür
-- [ ] Eksik veya bozuk YAML girdileri için açıklayıcı hata mesajları ekle
-- [ ] **Test:** Geçerli ve geçersiz YAML dosyaları ile birim testleri yaz
+- [X] `Src.Types.Spec`: Hedef sistem için cebirsel veri tiplerini (`SystemSpec`, `OstreeSpec`, `FlatpakSpec`) tanımla
+- [X] `Src.Config`: `yaml` ve `aeson` kütüphanelerini kullanarak `spec.yaml` dosyasını `SystemSpec` tipine dönüştür
+- [X] Eksik veya bozuk YAML girdileri için açıklayıcı hata mesajları ekle
+- [X] **Test:** Geçerli ve geçersiz YAML dosyaları ile birim testleri yaz
 
 ---
 

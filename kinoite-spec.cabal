@@ -9,6 +9,21 @@ license: BSD-3-Clause
 author: kinoite-spec contributors
 build-type: Simple
 
+library
+  hs-source-dirs: src
+  exposed-modules:
+      Src.Config
+    , Src.Types.Spec
+  default-language: GHC2021
+  ghc-options: -Wall
+  build-depends:
+      base >= 4.16 && < 5
+    , bytestring
+    , containers
+    , text
+    , yaml
+    , aeson
+
 executable kinoite-spec
   main-is: Main.hs
   hs-source-dirs: app
@@ -16,11 +31,20 @@ executable kinoite-spec
   ghc-options: -Wall
   build-depends:
       base >= 4.16 && < 5
+    , kinoite-spec
     , text
-    , bytestring
-    , containers
-    , yaml
-    , aeson
     , typed-process
     , optparse-applicative
     , ansi-terminal
+
+test-suite config-tests
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
+  hs-source-dirs: test
+  default-language: GHC2021
+  ghc-options: -Wall
+  build-depends:
+      base >= 4.16 && < 5
+    , bytestring
+    , containers
+    , kinoite-spec

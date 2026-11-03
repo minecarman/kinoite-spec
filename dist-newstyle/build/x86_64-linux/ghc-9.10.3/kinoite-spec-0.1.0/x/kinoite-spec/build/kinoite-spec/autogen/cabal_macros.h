@@ -10,16 +10,6 @@
   (major1) == 0 && (major2) <  1 || \
   (major1) == 0 && (major2) == 1 && (minor) <= 0)
 #endif /* MIN_VERSION_kinoite_spec */
-/* package aeson-2.3.2.0 */
-#ifndef VERSION_aeson
-#define VERSION_aeson "2.3.2.0"
-#endif /* VERSION_aeson */
-#ifndef MIN_VERSION_aeson
-#define MIN_VERSION_aeson(major1,major2,minor) (\
-  (major1) <  2 || \
-  (major1) == 2 && (major2) <  3 || \
-  (major1) == 2 && (major2) == 3 && (minor) <= 2)
-#endif /* MIN_VERSION_aeson */
 /* package ansi-terminal-1.1.5 */
 #ifndef VERSION_ansi_terminal
 #define VERSION_ansi_terminal "1.1.5"
@@ -40,26 +30,16 @@
   (major1) == 4 && (major2) <  20 || \
   (major1) == 4 && (major2) == 20 && (minor) <= 2)
 #endif /* MIN_VERSION_base */
-/* package bytestring-0.12.2.0 */
-#ifndef VERSION_bytestring
-#define VERSION_bytestring "0.12.2.0"
-#endif /* VERSION_bytestring */
-#ifndef MIN_VERSION_bytestring
-#define MIN_VERSION_bytestring(major1,major2,minor) (\
+/* package kinoite-spec-0.1.0 */
+#ifndef VERSION_kinoite_spec
+#define VERSION_kinoite_spec "0.1.0"
+#endif /* VERSION_kinoite_spec */
+#ifndef MIN_VERSION_kinoite_spec
+#define MIN_VERSION_kinoite_spec(major1,major2,minor) (\
   (major1) <  0 || \
-  (major1) == 0 && (major2) <  12 || \
-  (major1) == 0 && (major2) == 12 && (minor) <= 2)
-#endif /* MIN_VERSION_bytestring */
-/* package containers-0.7 */
-#ifndef VERSION_containers
-#define VERSION_containers "0.7"
-#endif /* VERSION_containers */
-#ifndef MIN_VERSION_containers
-#define MIN_VERSION_containers(major1,major2,minor) (\
-  (major1) <  0 || \
-  (major1) == 0 && (major2) <  7 || \
-  (major1) == 0 && (major2) == 7 && (minor) <= 0)
-#endif /* MIN_VERSION_containers */
+  (major1) == 0 && (major2) <  1 || \
+  (major1) == 0 && (major2) == 1 && (minor) <= 0)
+#endif /* MIN_VERSION_kinoite_spec */
 /* package optparse-applicative-0.19.0.0 */
 #ifndef VERSION_optparse_applicative
 #define VERSION_optparse_applicative "0.19.0.0"
@@ -90,16 +70,6 @@
   (major1) == 0 && (major2) <  2 || \
   (major1) == 0 && (major2) == 2 && (minor) <= 13)
 #endif /* MIN_VERSION_typed_process */
-/* package yaml-0.11.11.2 */
-#ifndef VERSION_yaml
-#define VERSION_yaml "0.11.11.2"
-#endif /* VERSION_yaml */
-#ifndef MIN_VERSION_yaml
-#define MIN_VERSION_yaml(major1,major2,minor) (\
-  (major1) <  0 || \
-  (major1) == 0 && (major2) <  11 || \
-  (major1) == 0 && (major2) == 11 && (minor) <= 11)
-#endif /* MIN_VERSION_yaml */
 
 /* tool gcc-16 */
 #ifndef TOOL_VERSION_gcc
