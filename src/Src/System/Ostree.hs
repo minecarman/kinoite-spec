@@ -17,6 +17,7 @@ import qualified Data.Text as Text
 import qualified Data.Text.Encoding as Text.Encoding
 import System.Exit (ExitCode (..))
 import System.Process.Typed (proc, readProcess)
+import Src.Host (resolveHostCommand)
 import Src.Types.Spec (PackageName (..))
 
 data OstreeStatus = OstreeStatus
@@ -44,10 +45,10 @@ parseOstreeStatus contents = do
 
 inspectOstree :: IO (Either Text (Set PackageName))
 inspectOstree = do
+  (command, arguments) <- resolveHostCommand "rpm-ostree" ["status", "--json"]
   result <-
     try
-      (readProcess
-        (proc "distrobox-host-exec" ["rpm-ostree", "status", "--json"]))
+      (readProcess (proc command arguments))
       :: IO (Either IOException (ExitCode, LazyByteString.ByteString, LazyByteString.ByteString))
   pure $ case result of
     Left exception -> Left (commandUnavailable "distrobox-host-exec rpm-ostree" exception)

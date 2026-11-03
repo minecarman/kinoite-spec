@@ -21,6 +21,7 @@ import qualified Data.Text as Text
 import qualified Data.Text.Encoding as Text.Encoding
 import System.Exit (ExitCode (..))
 import System.Process.Typed (proc, readProcess)
+import Src.Host (resolveHostCommand)
 import Src.Types.Spec
   ( FlatpakId (..)
   , FlatpakOverride (..)
@@ -59,10 +60,10 @@ parseFlatpakList contents = do
 
 inspectFlatpak :: IO (Either Text (Set FlatpakId, Set FlatpakId))
 inspectFlatpak = do
+  (command, arguments) <- resolveHostCommand "flatpak" ["list", "--json"]
   result <-
     try
-      (readProcess
-        (proc "distrobox-host-exec" ["flatpak", "list", "--json"]))
+      (readProcess (proc command arguments))
       :: IO (Either IOException (ExitCode, LazyByteString.ByteString, LazyByteString.ByteString))
   pure $ case result of
     Left exception -> Left (commandUnavailable "distrobox-host-exec flatpak" exception)
@@ -84,10 +85,11 @@ inspectFlatpakOverrides userApplications systemApplications = do
 
     inspectOne :: Scope -> FlatpakId -> IO (Either Text (FlatpakId, FlatpakOverride))
     inspectOne scope application = do
+      (command, arguments) <-
+        resolveHostCommand "flatpak" (scopeArguments scope <> ["override", "--show", flatpakIdText application])
       result <-
         try
-          (readProcess
-            (proc "distrobox-host-exec" (scopeArguments scope <> ["override", "--show", flatpakIdText application])))
+          (readProcess (proc command arguments))
         :: IO (Either IOException (ExitCode, LazyByteString.ByteString, LazyByteString.ByteString))
       pure $ case result of
         Left exception -> Left (commandUnavailable "distrobox-host-exec flatpak" exception)
@@ -117,8 +119,8 @@ inspectFlatpakOverrides userApplications systemApplications = do
 scopeArguments :: Scope -> [String]
 scopeArguments scope =
   case scope of
-    User -> ["flatpak", "--user"]
-    System -> ["flatpak", "--system"]
+    User -> ["--user"]
+    System -> ["--system"]
 
 parseFlatpakOverride :: ByteString -> Either Text FlatpakOverride
 parseFlatpakOverride contents = do

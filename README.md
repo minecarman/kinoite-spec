@@ -48,6 +48,15 @@ cabal test config-tests
 Testler gerçek sistem komutlarını çalıştırmaz; örnek JSON çıktılarıyla parser
 davranışını doğrular.
 
+Tek binary'yi `~/.local/bin` altına kurmak için:
+
+```bash
+cabal install exe:kinoite-spec --installdir="$HOME/.local/bin" --overwrite-policy=always
+```
+
+Binary, Distrobox içinde `distrobox-host-exec` üzerinden; Distrobox dışında ise
+doğrudan `rpm-ostree`, `flatpak` ve `distrobox` komutları üzerinden çalışır.
+
 ## Proje planı
 
 Aşamalar ve kapsamları [ROADMAP.md](ROADMAP.md) dosyasında açıklanmıştır.

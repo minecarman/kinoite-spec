@@ -14,6 +14,7 @@ import qualified Data.Text as Text
 import qualified Data.Text.Encoding as Text.Encoding
 import qualified Data.Set as Set
 import Src.Types.Action (Action (..), Scope (..))
+import Src.Host (resolveHostCommand)
 import Src.Types.Spec
   ( DistroboxSpec (..)
   , DistroboxName (..)
@@ -35,7 +36,8 @@ runActions (action : remaining) = do
 runAction :: Action -> IO (Either Text ())
 runAction action = do
   let (command, arguments) = commandForAction action
-  result <- try (readProcess (proc command arguments))
+  (resolvedCommand, resolvedArguments) <- resolveHostCommand command arguments
+  result <- try (readProcess (proc resolvedCommand resolvedArguments))
   pure $ case result of
     Left exception -> Left (commandUnavailable (Text.pack command) exception)
     Right (exitCode, _, errorOutput) ->

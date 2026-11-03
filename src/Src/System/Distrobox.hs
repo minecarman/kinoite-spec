@@ -19,6 +19,7 @@ import Data.Maybe (mapMaybe)
 import Src.Types.Spec (DistroboxName (..), DistroboxSpec (..))
 import System.Exit (ExitCode (..))
 import System.Process.Typed (proc, readProcess)
+import Src.Host (resolveHostCommand)
 
 parseDistroboxList :: ByteString -> Either Text (Set DistroboxName)
 parseDistroboxList contents =
@@ -35,10 +36,10 @@ parseDistroboxSpecsUnsafe contents =
 
 inspectDistroboxes :: IO (Either Text (Set DistroboxName))
 inspectDistroboxes = do
+  (command, arguments) <- resolveHostCommand "distrobox" ["list", "--no-color"]
   result <-
     try
-      (readProcess
-        (proc "distrobox-host-exec" ["distrobox", "list", "--no-color"]))
+      (readProcess (proc command arguments))
       :: IO (Either IOException (ExitCode, LazyByteString.ByteString, LazyByteString.ByteString))
   pure $ case result of
     Left exception -> Left (commandUnavailable "distrobox-host-exec distrobox" exception)
@@ -50,10 +51,10 @@ inspectDistroboxes = do
 
 inspectDistroboxSpecs :: IO (Either Text [DistroboxSpec])
 inspectDistroboxSpecs = do
+  (command, arguments) <- resolveHostCommand "distrobox" ["list", "--no-color"]
   result <-
     try
-      (readProcess
-        (proc "distrobox-host-exec" ["distrobox", "list", "--no-color"]))
+      (readProcess (proc command arguments))
       :: IO (Either IOException (ExitCode, LazyByteString.ByteString, LazyByteString.ByteString))
   pure $ case result of
     Left exception -> Left (commandUnavailable "distrobox-host-exec distrobox" exception)

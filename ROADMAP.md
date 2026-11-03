@@ -65,4 +65,4 @@
 - [X] Distrobox konteyner durumlarını okuma ve `distrobox create` entegrasyonu
 - [X] Flatpak izin geçersiz kılmalarını (`filesystem`, `environment`, `sockets`) destekleme
 - [X] `kinoite-spec export` komutuyla mevcut sistemi tek komutta YAML'a dökme
-- [ ] Tek binary çıktısı alıp Distrobox dışından (`~/.local/bin`) sorunsuz çalıştığını doğrulama
+- [X] Tek binary çıktısı alıp Distrobox dışından (`~/.local/bin`) sorunsuz çalıştığını doğrulama

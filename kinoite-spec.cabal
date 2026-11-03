@@ -13,6 +13,7 @@ library
   hs-source-dirs: src
   exposed-modules:
       Src.Config
+    , Src.Host
     , Src.Engine.Diff
     , Src.System.Flatpak
     , Src.System.Distrobox
@@ -26,6 +27,7 @@ library
   ghc-options: -Wall
   build-depends:
       base >= 4.16 && < 5
+    , directory
     , bytestring
     , containers
     , text
