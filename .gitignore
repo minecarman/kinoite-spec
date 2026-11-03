@@ -2,3 +2,4 @@ dist-newstyle/
 *.hi
 *.o
 .stack-work/
+current-spec.yaml
