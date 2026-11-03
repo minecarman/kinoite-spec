@@ -13,8 +13,10 @@ library
   hs-source-dirs: src
   exposed-modules:
       Src.Config
+    , Src.Engine.Diff
     , Src.System.Flatpak
     , Src.System.Ostree
+    , Src.Types.Action
     , Src.Types.CurrentState
     , Src.Types.Spec
   default-language: GHC2021

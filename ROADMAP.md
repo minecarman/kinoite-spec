@@ -29,15 +29,15 @@
 ---
 
 ## Faz 3: Saf Karşılaştırma ve Diff Motoru (Pure Engine)
-- [ ] `Src.Types.Action`: Yapılacak işlemleri modelleyen tipleri tanımla:
+- [X] `Src.Types.Action`: Yapılacak işlemleri modelleyen tipleri tanımla:
   - `InstallOstree PackageName` / `RemoveOstree PackageName`
   - `InstallFlatpak FlatpakId Scope` / `RemoveFlatpak FlatpakId Scope`
-- [ ] `Src.Engine.Diff`: `CurrentState -> SystemSpec -> [Action]` saf fonksiyonunu implemente et
-- [ ] Küme farkı (set difference) mantığını test et:
+- [X] `Src.Engine.Diff`: `CurrentState -> SystemSpec -> [Action]` saf fonksiyonunu implemente et
+- [X] Küme farkı (set difference) mantığını test et:
   - Hedefte olup sistemde olmayanlar -> `Install`
   - Sistemde olup hedefte olmayanlar -> `Remove`
   - İki tarafta da olanlar -> Yok say
-- [ ] **Test:** Saf diff motoru için kapsamlı birim testleri (QuickCheck veya Hspec) ekle
+- [X] **Test:** Saf diff motoru için kapsamlı birim testleri (QuickCheck veya Hspec) ekle
 
 ---
 

@@ -5,10 +5,15 @@ module Main (main) where
 import Data.ByteString (ByteString)
 import Data.Either (isLeft)
 import Src.Config (parseConfig)
+import Src.Engine.Diff (diff)
 import Src.System.Flatpak (parseFlatpakList)
 import Src.System.Ostree (parseOstreeStatus)
+import Src.Types.Action (Action (..), Scope (..))
+import Src.Types.CurrentState (CurrentState (..))
 import Src.Types.Spec
   ( FlatpakId (..)
+  , FlatpakSpec (..)
+  , OstreeSpec (..)
   , PackageName (..)
   , SystemSpec (..)
   , systemFlatpak
@@ -25,6 +30,8 @@ main = do
   assert "rpm-ostree JSON parses requested packages" ostreeJson
   assert "flatpak JSON separates installations" flatpakJson
   assert "malformed inspection JSON returns an error" malformedJson
+  assert "diff produces install and remove actions" diffActions
+  assert "diff ignores resources already in sync" emptyDiff
 
 validConfiguration :: Bool
 validConfiguration =
@@ -62,6 +69,61 @@ malformedJson :: Bool
 malformedJson =
   isLeft (parseOstreeStatus "{\"deployments\": [}")
     && isLeft (parseFlatpakList "[{\"application\": false}]")
+
+diffActions :: Bool
+diffActions =
+  diff currentState targetSpec
+    == [ InstallOstree (PackageName "tmux")
+       , RemoveOstree (PackageName "vim")
+       , RemoveFlatpak (FlatpakId "com.old.App") User
+       , InstallFlatpak (FlatpakId "org.mozilla.Firefox") System
+       ]
+
+emptyDiff :: Bool
+emptyDiff = diff currentState currentSpec == []
+
+currentState :: CurrentState
+currentState =
+  CurrentState
+    { currentOstreePackages =
+        Set.fromList [PackageName "zsh", PackageName "vim"]
+    , currentFlatpakUser = Set.singleton (FlatpakId "com.old.App")
+    , currentFlatpakSystem = Set.empty
+    }
+
+targetSpec :: SystemSpec
+targetSpec =
+  SystemSpec
+    { systemVersion = 1
+    , systemOstree =
+        OstreeSpec
+          { ostreeLayeredPackages =
+              Set.fromList [PackageName "zsh", PackageName "tmux"]
+          }
+    , systemFlatpak =
+        FlatpakSpec
+          { flatpakUser = Set.empty
+          , flatpakSystem = Set.fromList [FlatpakId "org.mozilla.Firefox"]
+          }
+    , systemDistroboxes = []
+    }
+
+currentSpec :: SystemSpec
+currentSpec =
+  SystemSpec
+    { systemVersion = 1
+    , systemOstree =
+        OstreeSpec
+          { ostreeLayeredPackages =
+              Set.fromList [PackageName "zsh", PackageName "vim"]
+          }
+    , systemFlatpak =
+        FlatpakSpec
+          { flatpakUser = Set.singleton (FlatpakId "com.old.App")
+          , flatpakSystem = Set.empty
+          }
+    , systemDistroboxes = []
+    }
 
 validYaml :: ByteString
 validYaml =
