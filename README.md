@@ -3,9 +3,7 @@
 A Haskell-based system convergence engine for managing Fedora Kinoite from a
 declarative YAML specification.
 
-## Status
-
-The project currently covers Phase 6:
+## Usages
 
 - Convert YAML configuration into strongly typed Haskell values
 - Parse `rpm-ostree status --json`
@@ -19,30 +17,12 @@ The project currently covers Phase 6:
 - Apply Flatpak `filesystem`, `environment`, and `sockets` overrides
 - Select a per-application Flatpak `remote` when needed
 
-Flatpak override example:
-
-```yaml
-flatpak:
-  remotes:
-    org.kde.KMines: flathub
-  overrides:
-    com.example.App:
-      filesystem:
-        - home
-      environment:
-        - EDITOR=vim
-      sockets:
-        - wayland
-```
-
 ## Requirements
 
 - Git
 - GHC 9.4 or newer and Cabal
 - `rpm-ostree`, `flatpak`, and preferably `distrobox` on Fedora Kinoite
 
-VS Code is not required. The following commands can be run from a regular
-terminal.
 
 ## Terminal installation
 
@@ -241,6 +221,5 @@ cabal install exe:kinoite-spec --installdir="$HOME/.local/bin" --overwrite-polic
 Inside Distrobox the binary uses `distrobox-host-exec`; outside Distrobox it
 calls `rpm-ostree`, `flatpak`, and `distrobox` directly.
 
-## Project roadmap
 
-See [ROADMAP.md](ROADMAP.md) for the phases and their scope.
+### Use kinoite.spec carefully.
