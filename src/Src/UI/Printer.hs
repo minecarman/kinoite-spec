@@ -26,24 +26,24 @@ import Src.Types.Spec
 printPlan :: [Action] -> IO ()
 printPlan actions =
   if null actions
-    then Text.IO.putStrLn "Sistem senkronize durumda."
+    then Text.IO.putStrLn "System is already in sync."
     else mapM_ printColoredAction actions
 
 renderAction :: Action -> Text
 renderAction action =
   case action of
     InstallOstree (PackageName packageName) ->
-      "+ Kurulacak Ostree paketi: " <> packageName
+      "+ Install OSTree package: " <> packageName
     RemoveOstree (PackageName packageName) ->
-      "- Kaldırılacak Ostree paketi: " <> packageName
+      "- Remove OSTree package: " <> packageName
     InstallFlatpak (FlatpakId flatpakId) scope _ ->
-      "+ Kurulacak Flatpak (" <> renderScope scope <> "): " <> flatpakId
+      "+ Install Flatpak (" <> renderScope scope <> "): " <> flatpakId
     RemoveFlatpak (FlatpakId flatpakId) scope ->
-      "- Kaldırılacak Flatpak (" <> renderScope scope <> "): " <> flatpakId
+      "- Remove Flatpak (" <> renderScope scope <> "): " <> flatpakId
     ApplyFlatpakOverride (FlatpakId flatpakId) scope _ ->
-      "~ Uygulanacak Flatpak override (" <> renderScope scope <> "): " <> flatpakId
+      "~ Apply Flatpak override (" <> renderScope scope <> "): " <> flatpakId
     CreateDistrobox specification ->
-      "+ Oluşturulacak Distrobox: "
+      "+ Create Distrobox: "
         <> renderDistroboxName (distroboxName specification)
 
 printColoredAction :: Action -> IO ()

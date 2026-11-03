@@ -50,14 +50,14 @@ cliParser :: ParserInfo Command
 cliParser =
   info
     (commandParser <**> helper)
-    (fullDesc <> progDesc "Fedora Kinoite sistemini hedef konfigürasyonla karşılaştırır" <> header "kinoite-spec")
+    (fullDesc <> progDesc "Compare Fedora Kinoite with a target configuration" <> header "kinoite-spec")
 
 commandParser :: Parser Command
 commandParser =
   hsubparser
-    ( command "plan" (info planParser (progDesc "Sistem farklarını göster"))
-        <> command "apply" (info applyParser (progDesc "Sistem farklarını uygula"))
-        <> command "export" (info (pure Export) (progDesc "Mevcut sistemi YAML olarak dışa aktar"))
+    ( command "plan" (info planParser (progDesc "Show system differences"))
+        <> command "apply" (info applyParser (progDesc "Apply system differences"))
+        <> command "export" (info (pure Export) (progDesc "Export the current system as YAML"))
     )
 
 planParser :: Parser Command
@@ -67,7 +67,7 @@ planParser =
       ( long "config"
           <> short 'c'
           <> metavar "FILE"
-          <> help "Okunacak YAML konfigürasyon dosyası"
+          <> help "YAML configuration file to read"
       )
 
 applyParser :: Parser Command
@@ -77,12 +77,12 @@ applyParser =
       ( long "config"
           <> short 'c'
           <> metavar "FILE"
-          <> help "Okunacak YAML konfigürasyon dosyası"
+          <> help "YAML configuration file to read"
       )
     <*> switch
       ( long "yes"
           <> short 'y'
-          <> help "Onay istemeden değişiklikleri uygula"
+          <> help "Apply changes without asking for confirmation"
       )
 
 runCommand :: Command -> IO ()
@@ -124,8 +124,8 @@ runApply path autoConfirm = do
                   result <- runActions actions
                   case result of
                     Left message -> reportError message
-                    Right () -> Text.IO.putStrLn "Değişiklikler başarıyla uygulandı."
-                else Text.IO.putStrLn "İşlem iptal edildi."
+                    Right () -> Text.IO.putStrLn "Changes applied successfully."
+                else Text.IO.putStrLn "Operation cancelled."
 
 runExport :: IO ()
 runExport = do
@@ -153,10 +153,10 @@ runExport = do
 
 askConfirmation :: IO Bool
 askConfirmation = do
-  Text.IO.putStr "Bu değişiklikler uygulansın mı? [e/H] "
+  Text.IO.putStr "Apply these changes? [y/N] "
   hFlush stdout
   answer <- Text.toLower <$> Text.IO.getLine
-  pure (answer == "e" || answer == "evet" || answer == "y" || answer == "yes")
+  pure (answer == "y" || answer == "yes")
 
 inspectCurrentState :: IO (Either Text CurrentState)
 inspectCurrentState = do
@@ -183,9 +183,9 @@ inspectCurrentState = do
 
 renderConfigError :: ConfigError -> Text
 renderConfigError configError =
-  "Konfigürasyon hatası: " <> Text.pack (show configError)
+  "Configuration error: " <> Text.pack (show configError)
 
 reportError :: Text -> IO ()
 reportError message = do
-  Text.IO.putStrLn ("Hata: " <> message)
+  Text.IO.putStrLn ("Error: " <> message)
   exitFailure

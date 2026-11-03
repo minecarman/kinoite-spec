@@ -1,68 +1,67 @@
----
-
-### `ROADMAP.md`
-
-```markdown
 # ROADMAP.md: kinoite-spec
 
-## Faz 0: Proje Kurulumu ve Altyapı
-- [X] Cabal projesini oluştur (`kinoite-spec.cabal`, `app/Main.hs`, `src/`)
-- [X] `ghcup` üzerinden GHC 9.4+ ve Cabal ortamını doğrula
-- [X] Temel CLI iskeletini `optparse-applicative` ile ayağa kaldır (`--help`, `--version`, `plan`, `apply`)
+## Phase 0: Project Setup and Infrastructure
+- [X] Create the Cabal project (`kinoite-spec.cabal`, `app/Main.hs`, `src/`)
+- [X] Verify GHC 9.4+ and Cabal through `ghcup`
+- [X] Bring up the basic CLI skeleton with `optparse-applicative`
+  (`--help`, `--version`, `plan`, `apply`)
 
 ---
 
-## Faz 1: Tip Modellemesi ve Konfigürasyon Okuma
-- [X] `Src.Types.Spec`: Hedef sistem için cebirsel veri tiplerini (`SystemSpec`, `OstreeSpec`, `FlatpakSpec`) tanımla
-- [X] `Src.Config`: `yaml` ve `aeson` kütüphanelerini kullanarak `spec.yaml` dosyasını `SystemSpec` tipine dönüştür
-- [X] Eksik veya bozuk YAML girdileri için açıklayıcı hata mesajları ekle
-- [X] **Test:** Geçerli ve geçersiz YAML dosyaları ile birim testleri yaz
+## Phase 1: Type Modeling and Configuration Reading
+- [X] Define target-system algebraic data types in `Src.Types.Spec`
+  (`SystemSpec`, `OstreeSpec`, `FlatpakSpec`)
+- [X] Convert `spec.yaml` into `SystemSpec` with `yaml` and `aeson`
+- [X] Add explanatory errors for missing or malformed YAML input
+- [X] **Test:** Add unit tests for valid and invalid YAML files
 
 ---
 
-## Faz 2: Sistem Durumunu Okuma (Inspection Layer)
-- [X] `Src.System.Ostree`: `rpm-ostree status --json` çıktısını çalıştırıp `Set PackageName` tipine dönüştür
-- [X] `Src.System.Flatpak`: `flatpak list --json` çıktısını çalıştırıp kurulu ID'leri ayrıştır
-- [X] `Src.Types.CurrentState`: Sistemin o anki durumunu temsil eden birleşik veri tipini oluştur
-- [X] **Test:** Simüle edilmiş (mock) JSON çıktılarıyla parser doğruluğunu test et
+## Phase 2: Reading System State (Inspection Layer)
+- [X] Run `rpm-ostree status --json` and convert it to `Set PackageName`
+- [X] Run `flatpak list --json` and parse installed IDs
+- [X] Create `Src.Types.CurrentState` for the combined current state
+- [X] **Test:** Verify parser correctness with simulated JSON output
 
 ---
 
-## Faz 3: Saf Karşılaştırma ve Diff Motoru (Pure Engine)
-- [X] `Src.Types.Action`: Yapılacak işlemleri modelleyen tipleri tanımla:
+## Phase 3: Pure Comparison and Diff Engine
+- [X] Define action types in `Src.Types.Action`:
   - `InstallOstree PackageName` / `RemoveOstree PackageName`
   - `InstallFlatpak FlatpakId Scope` / `RemoveFlatpak FlatpakId Scope`
-- [X] `Src.Engine.Diff`: `CurrentState -> SystemSpec -> [Action]` saf fonksiyonunu implemente et
-- [X] Küme farkı (set difference) mantığını test et:
-  - Hedefte olup sistemde olmayanlar -> `Install`
-  - Sistemde olup hedefte olmayanlar -> `Remove`
-  - İki tarafta da olanlar -> Yok say
-- [X] **Test:** Saf diff motoru için kapsamlı birim testleri (QuickCheck veya Hspec) ekle
+- [X] Implement the pure `CurrentState -> SystemSpec -> [Action]` function
+  in `Src.Engine.Diff`
+- [X] Test set-difference behavior:
+  - Target-only resources -> `Install`
+  - Current-only resources -> `Remove`
+  - Resources on both sides -> Ignore
+- [X] **Test:** Add comprehensive unit tests for the pure diff engine
 
 ---
 
-## Faz 4: Terminal Çıktısı ve Planlama (Dry-Run UX)
-- [X] `Src.UI.Printer`: `[Action]` listesini terminalde renkli ve okunabilir olarak biçimlendir:
-  - Yeşil: `+ Kurulacak`
-  - Kırmızı: `- Kaldırılacak`
-  - Mavi: `~ Değişecek / Güncellenecek`
-- [X] `kinoite-spec plan` komutunu sisteme bağla ve terminalde gerçek diff'i göster
-- [X] Değişiklik yoksa `Sistem senkronize durumda.` mesajı basıp çık
+## Phase 4: Terminal Output and Planning (Dry-Run UX)
+- [X] Format `[Action]` as readable colored terminal output:
+  - Green: `+ Install`
+  - Red: `- Remove`
+  - Blue: `~ Change / Update`
+- [X] Connect `kinoite-spec plan` to the real system diff
+- [X] Print `System is already in sync.` when there are no changes
 
 ---
 
-## Faz 5: Yürütme ve Konverjans (Action Runner)
-- [X] `Src.Runner`: `[Action]` listesini gerçek sistem komutlarına dönüştür:
-  - `flatpak install/uninstall` çağrıları
-  - `rpm-ostree install/uninstall` çağrıları
-- [X] Kullanıcı onay mekanizmasını entegre et (`Bu değişiklikler uygulansın mı? [e/H]`)
-- [X] Komutların hata durumlarını (`ExitFailure`) güvenli şekilde yakala ve kullanıcıya bildir
-- [X] `kinoite-spec apply` komutunu doğrula
+## Phase 5: Execution and Convergence (Action Runner)
+- [X] Convert `[Action]` into real system commands:
+  - `flatpak install/uninstall`
+  - `rpm-ostree install/uninstall`
+- [X] Integrate user confirmation (`Apply these changes? [y/N]`)
+- [X] Safely catch command failures (`ExitFailure`) and report them
+- [X] Validate `kinoite-spec apply`
 
 ---
 
-## Faz 6: Gelişmiş Özellikler ve Rafine Etme
-- [X] Distrobox konteyner durumlarını okuma ve `distrobox create` entegrasyonu
-- [X] Flatpak izin geçersiz kılmalarını (`filesystem`, `environment`, `sockets`) destekleme
-- [X] `kinoite-spec export` komutuyla mevcut sistemi tek komutta YAML'a dökme
-- [X] Tek binary çıktısı alıp Distrobox dışından (`~/.local/bin`) sorunsuz çalıştığını doğrulama
+## Phase 6: Advanced Features and Refinement
+- [X] Inspect Distrobox state and integrate `distrobox create`
+- [X] Support Flatpak permission overrides
+  (`filesystem`, `environment`, `sockets`)
+- [X] Export the current system to YAML with `kinoite-spec export`
+- [X] Build a standalone binary and verify it outside Distrobox

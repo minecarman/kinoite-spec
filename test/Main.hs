@@ -106,9 +106,9 @@ emptyDiff = diff currentState currentSpec == []
 printerOutput :: Bool
 printerOutput =
   renderAction (InstallOstree (PackageName "zsh"))
-    == "+ Kurulacak Ostree paketi: zsh"
+    == "+ Install OSTree package: zsh"
     && renderAction (RemoveFlatpak (FlatpakId "com.example.App") User)
-      == "- Kaldırılacak Flatpak (user): com.example.App"
+      == "- Remove Flatpak (user): com.example.App"
 
 runnerCommands :: Bool
 runnerCommands =
