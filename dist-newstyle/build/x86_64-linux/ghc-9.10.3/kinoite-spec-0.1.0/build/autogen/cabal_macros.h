@@ -60,6 +60,16 @@
   (major1) == 2 && (major2) <  1 || \
   (major1) == 2 && (major2) == 1 && (minor) <= 3)
 #endif /* MIN_VERSION_text */
+/* package typed-process-0.2.13.0 */
+#ifndef VERSION_typed_process
+#define VERSION_typed_process "0.2.13.0"
+#endif /* VERSION_typed_process */
+#ifndef MIN_VERSION_typed_process
+#define MIN_VERSION_typed_process(major1,major2,minor) (\
+  (major1) <  0 || \
+  (major1) == 0 && (major2) <  2 || \
+  (major1) == 0 && (major2) == 2 && (minor) <= 13)
+#endif /* MIN_VERSION_typed_process */
 /* package yaml-0.11.11.2 */
 #ifndef VERSION_yaml
 #define VERSION_yaml "0.11.11.2"

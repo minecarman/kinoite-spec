@@ -13,6 +13,9 @@ library
   hs-source-dirs: src
   exposed-modules:
       Src.Config
+    , Src.System.Flatpak
+    , Src.System.Ostree
+    , Src.Types.CurrentState
     , Src.Types.Spec
   default-language: GHC2021
   ghc-options: -Wall
@@ -23,6 +26,7 @@ library
     , text
     , yaml
     , aeson
+    , typed-process
 
 executable kinoite-spec
   main-is: Main.hs
@@ -47,4 +51,5 @@ test-suite config-tests
       base >= 4.16 && < 5
     , bytestring
     , containers
+    , text
     , kinoite-spec

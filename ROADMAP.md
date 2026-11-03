@@ -21,10 +21,10 @@
 ---
 
 ## Faz 2: Sistem Durumunu Okuma (Inspection Layer)
-- [ ] `Src.System.Ostree`: `rpm-ostree status --json` çıktısını çalıştırıp `Set PackageName` tipine dönüştür
-- [ ] `Src.System.Flatpak`: `flatpak list --json` çıktısını çalıştırıp kurulu ID'leri ayrıştır
-- [ ] `Src.Types.CurrentState`: Sistemin o anki durumunu temsil eden birleşik veri tipini oluştur
-- [ ] **Test:** Simüle edilmiş (mock) JSON çıktılarıyla parser doğruluğunu test et
+- [X] `Src.System.Ostree`: `rpm-ostree status --json` çıktısını çalıştırıp `Set PackageName` tipine dönüştür
+- [X] `Src.System.Flatpak`: `flatpak list --json` çıktısını çalıştırıp kurulu ID'leri ayrıştır
+- [X] `Src.Types.CurrentState`: Sistemin o anki durumunu temsil eden birleşik veri tipini oluştur
+- [X] **Test:** Simüle edilmiş (mock) JSON çıktılarıyla parser doğruluğunu test et
 
 ---
 
