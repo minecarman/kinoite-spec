@@ -87,18 +87,7 @@ kinoite-spec export > current-spec.yaml
 
 ---
 
-## 6. Non-Goals
-
-- Writing a package manager (the tool only orchestrates `rpm-ostree` and
-  `flatpak` CLI tools).
-- Running a background `systemd` daemon or monitoring service.
-- Providing a graphical or web UI.
-- Calling `sudo` directly as root (the tool runs as the user; `rpm-ostree`
-  uses Polkit when required).
-
----
-
-## 7. Haskell Packages
+## 6. Haskell Packages
 
 - `base >= 4.16 && < 5`
 - `text`, `bytestring`, `containers`
