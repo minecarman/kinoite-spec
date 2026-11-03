@@ -11,7 +11,16 @@ module Src.Types.Spec
   , SystemSpec (..)
   ) where
 
-import Data.Aeson (FromJSON (..), withObject, (.:), (.:?), (.!=))
+import Data.Aeson
+  ( FromJSON (..)
+  , ToJSON (..)
+  , object
+  , withObject
+  , (.:)
+  , (.:?)
+  , (.!=)
+  , (.=)
+  )
 import Data.Set (Set)
 import Data.Text (Text)
 import GHC.Generics (Generic)
@@ -41,7 +50,7 @@ data DistroboxSpec = DistroboxSpec
   , distroboxImage :: Text
   , distroboxHome :: Maybe Text
   }
-  deriving (Eq, Show, Generic)
+  deriving (Eq, Ord, Show, Generic)
 
 data SystemSpec = SystemSpec
   { systemVersion :: Int
@@ -81,3 +90,41 @@ instance FromJSON PackageName where
 
 instance FromJSON FlatpakId where
   parseJSON value = FlatpakId <$> parseJSON value
+
+instance ToJSON PackageName where
+  toJSON (PackageName name) = toJSON name
+
+instance ToJSON FlatpakId where
+  toJSON (FlatpakId flatpakId) = toJSON flatpakId
+
+instance ToJSON DistroboxName where
+  toJSON (DistroboxName name) = toJSON name
+
+instance ToJSON OstreeSpec where
+  toJSON specification =
+    object ["layered_packages" .= ostreeLayeredPackages specification]
+
+instance ToJSON FlatpakSpec where
+  toJSON specification =
+    object
+      [ "user" .= flatpakUser specification
+      , "system" .= flatpakSystem specification
+      ]
+
+instance ToJSON DistroboxSpec where
+  toJSON specification =
+    object
+      ( [ "name" .= distroboxName specification
+        , "image" .= distroboxImage specification
+        ]
+          <> maybe [] (\home -> ["home" .= home]) (distroboxHome specification)
+      )
+
+instance ToJSON SystemSpec where
+  toJSON specification =
+    object
+      [ "version" .= systemVersion specification
+      , "ostree" .= systemOstree specification
+      , "flatpak" .= systemFlatpak specification
+      , "distrobox" .= systemDistroboxes specification
+      ]

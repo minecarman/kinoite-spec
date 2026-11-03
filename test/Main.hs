@@ -7,12 +7,15 @@ import Data.Either (isLeft)
 import Src.Config (parseConfig)
 import Src.Engine.Diff (diff)
 import Src.Runner (commandForAction)
+import Src.System.Distrobox (parseDistroboxList, parseDistroboxSpecs)
 import Src.System.Flatpak (parseFlatpakList)
 import Src.System.Ostree (parseOstreeStatus)
 import Src.Types.Action (Action (..), Scope (..))
 import Src.Types.CurrentState (CurrentState (..))
 import Src.Types.Spec
-  ( FlatpakId (..)
+  ( DistroboxName (..)
+  , DistroboxSpec (..)
+  , FlatpakId (..)
   , FlatpakSpec (..)
   , OstreeSpec (..)
   , PackageName (..)
@@ -36,6 +39,9 @@ main = do
   assert "diff ignores resources already in sync" emptyDiff
   assert "printer renders actions" printerOutput
   assert "runner builds safe host commands" runnerCommands
+  assert "distrobox list parses names" distroboxJson
+  assert "distrobox export parses image data" distroboxExportJson
+  assert "diff creates missing distroboxes" distroboxDiff
 
 validConfiguration :: Bool
 validConfiguration =
@@ -99,6 +105,29 @@ runnerCommands =
     == ("distrobox-host-exec", ["rpm-ostree", "install", "zsh"])
     && commandForAction (RemoveFlatpak (FlatpakId "com.example.App") User)
       == ("distrobox-host-exec", ["flatpak", "--user", "uninstall", "--noninteractive", "com.example.App"])
+    && commandForAction (CreateDistrobox (DistroboxSpec (DistroboxName "dev-box") "fedora:latest" (Just "~/Dev")))
+      == ("distrobox-host-exec", ["distrobox", "create", "--name", "dev-box", "--image", "fedora:latest", "--home", "~/Dev"])
+
+distroboxJson :: Bool
+distroboxJson =
+  parseDistroboxList
+    "ID           | NAME       | STATUS | IMAGE\n\
+    \1            | dev-box    | Up     | fedora:latest\n\
+    \2            | media-box  | Exited | fedora:latest\n"
+    == Right (Set.fromList [DistroboxName "dev-box", DistroboxName "media-box"])
+
+distroboxExportJson :: Bool
+distroboxExportJson =
+  parseDistroboxSpecs
+    "ID           | NAME       | STATUS | IMAGE\n\
+    \1            | dev-box    | Up     | fedora:latest\n"
+    == Right
+      [DistroboxSpec (DistroboxName "dev-box") "fedora:latest" Nothing]
+
+distroboxDiff :: Bool
+distroboxDiff =
+  diff currentState targetWithDistrobox
+    == [CreateDistrobox (DistroboxSpec (DistroboxName "dev-box") "fedora:latest" (Just "~/Dev"))]
 
 currentState :: CurrentState
 currentState =
@@ -107,6 +136,22 @@ currentState =
         Set.fromList [PackageName "zsh", PackageName "vim"]
     , currentFlatpakUser = Set.singleton (FlatpakId "com.old.App")
     , currentFlatpakSystem = Set.empty
+    , currentDistroboxes = Set.empty
+    }
+
+targetWithDistrobox :: SystemSpec
+targetWithDistrobox =
+  SystemSpec
+    { systemVersion = 1
+    , systemOstree =
+        OstreeSpec
+          (Set.fromList [PackageName "zsh", PackageName "vim"])
+    , systemFlatpak =
+        FlatpakSpec
+          (Set.singleton (FlatpakId "com.old.App"))
+          Set.empty
+    , systemDistroboxes =
+        [DistroboxSpec (DistroboxName "dev-box") "fedora:latest" (Just "~/Dev")]
     }
 
 targetSpec :: SystemSpec

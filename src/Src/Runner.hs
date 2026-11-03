@@ -13,7 +13,12 @@ import Data.Text (Text)
 import qualified Data.Text as Text
 import qualified Data.Text.Encoding as Text.Encoding
 import Src.Types.Action (Action (..), Scope (..))
-import Src.Types.Spec (FlatpakId (..), PackageName (..))
+import Src.Types.Spec
+  ( DistroboxSpec (..)
+  , DistroboxName (..)
+  , FlatpakId (..)
+  , PackageName (..)
+  )
 import System.Exit (ExitCode (..))
 import System.Process.Typed (proc, readProcess)
 
@@ -48,6 +53,17 @@ commandForAction action =
       hostCommand "flatpak" (scopeArguments scope <> ["install", "--noninteractive", Text.unpack flatpakId])
     RemoveFlatpak (FlatpakId flatpakId) scope ->
       hostCommand "flatpak" (scopeArguments scope <> ["uninstall", "--noninteractive", Text.unpack flatpakId])
+    CreateDistrobox specification ->
+      ( "distrobox-host-exec"
+      , [ "distrobox"
+        , "create"
+        , "--name"
+        , Text.unpack (distroboxNameText (distroboxName specification))
+        , "--image"
+        , Text.unpack (distroboxImage specification)
+        ]
+          <> homeArguments (distroboxHome specification)
+      )
 
 hostCommand :: String -> [String] -> (FilePath, [String])
 hostCommand command arguments =
@@ -58,6 +74,15 @@ scopeArguments scope =
   case scope of
     User -> ["--user"]
     System -> ["--system"]
+
+homeArguments :: Maybe Text -> [String]
+homeArguments maybeHome =
+  case maybeHome of
+    Nothing -> []
+    Just home -> ["--home", Text.unpack home]
+
+distroboxNameText :: DistroboxName -> Text
+distroboxNameText (DistroboxName name) = name
 
 commandFailure :: Text -> ByteString -> Text
 commandFailure command errorOutput =

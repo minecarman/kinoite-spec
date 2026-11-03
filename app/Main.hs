@@ -4,6 +4,7 @@ module Main (main) where
 
 import Data.Text (Text)
 import qualified Data.Text as Text
+import qualified Data.Text.Encoding as Text.Encoding
 import qualified Data.Text.IO as Text.IO
 import Options.Applicative
   ( Parser
@@ -28,14 +29,18 @@ import Src.Config (ConfigError, loadConfig)
 import Src.Engine.Diff (diff)
 import Src.Runner (runActions)
 import Src.System.Flatpak (inspectFlatpak)
+import Src.System.Distrobox (inspectDistroboxSpecs, inspectDistroboxes)
 import Src.System.Ostree (inspectOstree)
 import Src.Types.CurrentState (CurrentState (..))
+import Src.Types.Spec (FlatpakSpec (..), OstreeSpec (..), SystemSpec (..))
 import Src.UI.Printer (printPlan)
+import Data.Yaml (encode)
 import System.Exit (exitFailure)
 
 data Command
   = Plan FilePath
   | Apply FilePath Bool
+  | Export
 
 main :: IO ()
 main = execParser cliParser >>= runCommand
@@ -51,6 +56,7 @@ commandParser =
   hsubparser
     ( command "plan" (info planParser (progDesc "Sistem farklarını göster"))
         <> command "apply" (info applyParser (progDesc "Sistem farklarını uygula"))
+        <> command "export" (info (pure Export) (progDesc "Mevcut sistemi YAML olarak dışa aktar"))
     )
 
 planParser :: Parser Command
@@ -83,6 +89,7 @@ runCommand cliCommand =
   case cliCommand of
     Plan path -> runPlan path
     Apply path autoConfirm -> runApply path autoConfirm
+    Export -> runExport
 
 runPlan :: FilePath -> IO ()
 runPlan path = do
@@ -119,6 +126,26 @@ runApply path autoConfirm = do
                     Right () -> Text.IO.putStrLn "Değişiklikler başarıyla uygulandı."
                 else Text.IO.putStrLn "İşlem iptal edildi."
 
+runExport :: IO ()
+runExport = do
+  ostreeResult <- inspectOstree
+  flatpakResult <- inspectFlatpak
+  distroboxResult <- inspectDistroboxSpecs
+  case (ostreeResult, flatpakResult, distroboxResult) of
+    (Right ostreePackages, Right (userPackages, systemPackages), Right distroboxes) ->
+      Text.IO.putStr (Text.Encoding.decodeUtf8 (encode specification))
+      where
+        specification =
+          SystemSpec
+            { systemVersion = 1
+            , systemOstree = OstreeSpec ostreePackages
+            , systemFlatpak = FlatpakSpec userPackages systemPackages
+            , systemDistroboxes = distroboxes
+            }
+    (Left message, _, _) -> reportError message
+    (_, Left message, _) -> reportError message
+    (_, _, Left message) -> reportError message
+
 askConfirmation :: IO Bool
 askConfirmation = do
   Text.IO.putStr "Bu değişiklikler uygulansın mı? [e/H] "
@@ -129,14 +156,17 @@ inspectCurrentState :: IO (Either Text CurrentState)
 inspectCurrentState = do
   ostreeResult <- inspectOstree
   flatpakResult <- inspectFlatpak
+  distroboxResult <- inspectDistroboxes
   pure $ do
     ostreePackages <- ostreeResult
     (flatpakUserPackages, flatpakSystemPackages) <- flatpakResult
+    distroboxes <- distroboxResult
     pure
       CurrentState
         { currentOstreePackages = ostreePackages
         , currentFlatpakUser = flatpakUserPackages
         , currentFlatpakSystem = flatpakSystemPackages
+        , currentDistroboxes = distroboxes
         }
 
 renderConfigError :: ConfigError -> Text

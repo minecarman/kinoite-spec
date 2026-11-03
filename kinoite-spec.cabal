@@ -15,6 +15,7 @@ library
       Src.Config
     , Src.Engine.Diff
     , Src.System.Flatpak
+    , Src.System.Distrobox
     , Src.System.Ostree
     , Src.Runner
     , Src.Types.Action
@@ -42,6 +43,7 @@ executable kinoite-spec
       base >= 4.16 && < 5
     , kinoite-spec
     , text
+    , yaml
     , typed-process
     , optparse-applicative
     , ansi-terminal

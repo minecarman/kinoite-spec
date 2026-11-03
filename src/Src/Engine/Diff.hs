@@ -9,7 +9,8 @@ import Src.Types.CurrentState
   ( CurrentState (..)
   )
 import Src.Types.Spec
-  ( FlatpakId
+  ( DistroboxSpec (..)
+  , FlatpakId
   , FlatpakSpec (..)
   , OstreeSpec (..)
   , PackageName
@@ -20,6 +21,7 @@ diff :: CurrentState -> SystemSpec -> [Action]
 diff current target =
   ostreeActions current target
     <> flatpakActions current target
+    <> distroboxActions current target
 
 ostreeActions :: CurrentState -> SystemSpec -> [Action]
 ostreeActions current target =
@@ -53,6 +55,13 @@ flatpakScopeActions scope current target =
     removeFlatpaks :: Set FlatpakId -> [Action]
     removeFlatpaks items =
       [RemoveFlatpak item scope | item <- Set.toAscList items]
+
+distroboxActions :: CurrentState -> SystemSpec -> [Action]
+distroboxActions current target =
+  [ CreateDistrobox specification
+  | specification <- systemDistroboxes target
+  , distroboxName specification `Set.notMember` currentDistroboxes current
+  ]
 
 installActions :: (item -> Action) -> Set item -> [Action]
 installActions constructor items =

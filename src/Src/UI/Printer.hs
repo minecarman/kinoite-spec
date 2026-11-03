@@ -16,7 +16,12 @@ import System.Console.ANSI
   , SGR (..)
   , setSGR
   )
-import Src.Types.Spec (FlatpakId (..), PackageName (..))
+import Src.Types.Spec
+  ( DistroboxName (..)
+  , DistroboxSpec (..)
+  , FlatpakId (..)
+  , PackageName (..)
+  )
 
 printPlan :: [Action] -> IO ()
 printPlan actions =
@@ -35,6 +40,9 @@ renderAction action =
       "+ Kurulacak Flatpak (" <> renderScope scope <> "): " <> flatpakId
     RemoveFlatpak (FlatpakId flatpakId) scope ->
       "- Kaldırılacak Flatpak (" <> renderScope scope <> "): " <> flatpakId
+    CreateDistrobox specification ->
+      "+ Oluşturulacak Distrobox: "
+        <> renderDistroboxName (distroboxName specification)
 
 printColoredAction :: Action -> IO ()
 printColoredAction action = do
@@ -49,9 +57,13 @@ actionColor action =
     InstallFlatpak _ _ -> Green
     RemoveOstree _ -> Red
     RemoveFlatpak _ _ -> Red
+    CreateDistrobox _ -> Green
 
 renderScope :: Scope -> Text
 renderScope scope =
   case scope of
     User -> "user"
     System -> "system"
+
+renderDistroboxName :: DistroboxName -> Text
+renderDistroboxName (DistroboxName name) = name
